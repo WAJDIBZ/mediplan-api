@@ -1,4 +1,4 @@
-package com.sirm.mediplanapi;
+package com.example.mediplan;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,5 +9,4 @@ public class MediplanApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(MediplanApiApplication.class, args);
     }
-
 }
