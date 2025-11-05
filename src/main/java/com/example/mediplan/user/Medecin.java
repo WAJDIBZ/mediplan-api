@@ -1,32 +1,20 @@
 package com.example.mediplan.user;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.experimental.SuperBuilder;
+import lombok.*;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.TypeAlias;
 
-@Getter
-@Setter
-@SuperBuilder(toBuilder = true)
-@NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-@Document(collection = "users")
+@Document("users")
 @TypeAlias("doctor")
+@Data @NoArgsConstructor @AllArgsConstructor @EqualsAndHashCode(callSuper = true)
 public class Medecin extends User {
 
-    @Indexed
     private String specialty;
 
-    @Indexed(unique = true)
+    @Indexed(unique = true, sparse = true)
     private String licenseNumber;
 
     private int yearsOfExperience;
-
     private String clinicName;
-
-    private Address clinicAddress;
 }
