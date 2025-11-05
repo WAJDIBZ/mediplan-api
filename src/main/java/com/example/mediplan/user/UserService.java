@@ -3,39 +3,44 @@ package com.example.mediplan.user;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    // Manual constructor
     public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User createUser(String fullName, String email, String rawPassword, User.Role role) {
-        if (userRepository.existsByEmail(email.toLowerCase())) {
-            throw new IllegalArgumentException("Email already used");
-        }
-        User user = new User(
-                null,
-                fullName,
-                email.toLowerCase(),
-                passwordEncoder.encode(rawPassword),
-                role == null ? User.Role.PATIENT : role,
-                false
-        );
+    public boolean emailExists(String email) {
+        return email != null && userRepository.existsByEmail(email);
+    }
+
+    public boolean licenseExists(String licenseNumber) {
+        return licenseNumber != null && userRepository.existsByLicenseNumber(licenseNumber);
+    }
+
+    public <T extends User> T save(T user) {
         return userRepository.save(user);
     }
 
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email.toLowerCase())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    public Optional<User> findById(String id) {
+        return userRepository.findById(id);
+    }
+
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email);
     }
 
     public boolean checkPassword(String raw, String hash) {
         return passwordEncoder.matches(raw, hash);
+    }
+
+    public String hashPassword(String rawPassword) {
+        return passwordEncoder.encode(rawPassword);
     }
 }
