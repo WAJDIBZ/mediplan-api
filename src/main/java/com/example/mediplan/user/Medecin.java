@@ -5,9 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.TypeAlias;
 
 @Getter
 @Setter
@@ -21,7 +21,7 @@ public class Medecin extends User {
     @Indexed
     private String specialty;
 
-    @Indexed(unique = true, sparse = true)
+    @Indexed(unique = true)
     private String licenseNumber;
 
     private int yearsOfExperience;
