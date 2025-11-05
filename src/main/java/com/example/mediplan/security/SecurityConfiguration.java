@@ -26,24 +26,27 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration c = new CorsConfiguration();
-                    c.setAllowedOrigins(List.of(System.getProperty("cors.allowed-origins", "http://localhost:3000")));
+                    //  Allow both local dev and Heroku
+                    c.setAllowedOrigins(List.of(
+                            "http://localhost:3000",
+                            "https://mediplan-api-1b2c88de81dd.herokuapp.com"
+                    ));
                     c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     c.setAllowedHeaders(List.of("*"));
                     c.setAllowCredentials(true);
                     return c;
                 }))
                 .authorizeHttpRequests(auth -> auth
+                        //  Public routes
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/doctor/**").hasAnyRole("DOCTOR", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-        // REMOVED: .httpBasic(Customizer.withDefaults());
+
         return http.build();
     }
 }
