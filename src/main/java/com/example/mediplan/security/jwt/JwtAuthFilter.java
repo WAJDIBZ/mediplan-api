@@ -29,6 +29,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+
+        String path = request.getRequestURI();
+        // ✅ Skip token processing for public endpoints
+        if (path.startsWith("/api/auth/") || path.startsWith("/actuator/health")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
@@ -50,4 +58,5 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         chain.doFilter(request, response);
     }
+
 }
