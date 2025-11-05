@@ -8,33 +8,50 @@ import lombok.Data;
 @Data
 public class RegisterRequest {
 
-    @NotBlank
+    @NotBlank(message = "Full name is required")
     private String fullName;
 
-    @Email
-    @NotBlank
+    @Email(message = "Email must be valid")
+    @NotBlank(message = "Email is required")
     private String email;
 
-    @Size(min = 8)
-    @NotBlank
+    @Size(min = 8, message = "Password must be at least 8 characters")
+    @NotBlank(message = "Password is required")
     private String password;
 
     private String role;
+
+    // Getters
+    public String getFullName() {
+        return fullName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
 
     public String getRole() {
         return role;
     }
 
-    public String getFullName() {
-        return fullName;
+    // Setters - REQUIRED for JSON deserialization
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
-
-
-    public String getEmail() {
-        return email;
+    public void setEmail(String email) {
+        this.email = email;
     }
-    public  String getPassword(){
-        return password;
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }
