@@ -9,9 +9,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "users")
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
-@AllArgsConstructor
+
 public class User {
 
     @Id
@@ -26,5 +26,38 @@ public class User {
         ADMIN,
         DOCTOR,
         PATIENT
+    }
+
+    public User(String id, String fullName, String email, String passwordHash, Role role, boolean emailVerified) {
+        this.id = id;
+        this.fullName = fullName;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+        this.emailVerified = emailVerified;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
     }
 }

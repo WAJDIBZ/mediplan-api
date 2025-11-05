@@ -20,4 +20,21 @@ public class RegisterRequest {
     private String password;
 
     private String role;
+
+    public String getRole() {
+        return role;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+
+
+    public String getEmail() {
+        return email;
+    }
+    public  String getPassword(){
+        return password;
+    }
 }

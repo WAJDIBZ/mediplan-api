@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: mediplan-api
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+
+server:
+  port: 8080
+
+app:
+  security:
+    jwt:
+      access-secret: ${JWT_ACCESS_SECRET:change-me-access}
+      refresh-secret: ${JWT_REFRESH_SECRET:change-me-refresh}
+      access-expiration-min: 60
+      refresh-expiration-days: 7
+
+cors:
+  allowed-origins: http://localhost:3000
+  allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+  allowed-headers: "*"
+  allow-credentials: true

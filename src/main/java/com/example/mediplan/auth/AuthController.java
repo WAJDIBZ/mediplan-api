@@ -4,36 +4,59 @@ import com.example.mediplan.auth.dto.AuthResponse;
 import com.example.mediplan.auth.dto.LoginRequest;
 import com.example.mediplan.auth.dto.RegisterRequest;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
 
+    @Autowired
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
+
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest req) {
-        return ResponseEntity.ok(authService.register(req));
+    public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest req) {
+        try {
+            AuthResponse response = authService.register(req);
+            System.out.println("Registration successful, returning tokens");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            System.out.println(" Registration failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            System.out.println("Unexpected error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("message", "Erreur serveur: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest req) {
-        return ResponseEntity.ok(authService.login(req));
+    public ResponseEntity<?> login(@RequestBody @Valid LoginRequest req) {
+        try {
+            AuthResponse response = authService.login(req);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(401).body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("message", "Erreur serveur: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(@RequestParam("token") String refreshToken) {
-        return ResponseEntity.ok(authService.refresh(refreshToken));
+    public ResponseEntity<?> refresh(@RequestParam("token") String refreshToken) {
+        try {
+            return ResponseEntity.ok(authService.refresh(refreshToken));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("message", "Token invalide"));
+        }
     }
 
     @GetMapping("/me")

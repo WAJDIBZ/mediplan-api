@@ -11,21 +11,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
+
 public class AuthService {
 
     private final UserService userService;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    public AuthService(UserService userService, UserRepository userRepository, JwtService jwtService) {
+        this.userService = userService;
+        this.userRepository = userRepository;
+        this.jwtService = jwtService;
+    }
 
     public AuthResponse register(RegisterRequest req) {
         User.Role role = null;
-        try {
-            if (req.getRole() != null) {
-                role = User.Role.valueOf(req.getRole().toUpperCase());
-            }
-        } catch (Exception ignored) {
-        }
+        try { if (req.getRole()!=null) role = User.Role.valueOf(req.getRole().toUpperCase()); } catch (Exception ignored) {}
         User user = userService.createUser(req.getFullName(), req.getEmail(), req.getPassword(), role);
         String access = jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
         String refresh = jwtService.generateRefreshToken(user.getId());

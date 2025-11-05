@@ -1,27 +1,32 @@
 package com.example.mediplan.user;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    // Manual constructor
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public User createUser(String fullName, String email, String rawPassword, User.Role role) {
         if (userRepository.existsByEmail(email.toLowerCase())) {
             throw new IllegalArgumentException("Email already used");
         }
-        User user = User.builder()
-                .fullName(fullName)
-                .email(email.toLowerCase())
-                .passwordHash(passwordEncoder.encode(rawPassword))
-                .role(role == null ? User.Role.PATIENT : role)
-                .emailVerified(false)
-                .build();
+        User user = new User(
+                null,
+                fullName,
+                email.toLowerCase(),
+                passwordEncoder.encode(rawPassword),
+                role == null ? User.Role.PATIENT : role,
+                false
+        );
         return userRepository.save(user);
     }
 
