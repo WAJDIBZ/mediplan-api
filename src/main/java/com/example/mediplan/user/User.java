@@ -1,63 +1,47 @@
 package com.example.mediplan.user;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "users")
-@Data
-@Builder(toBuilder = true)
-@NoArgsConstructor
+import java.time.Instant;
 
-public class User {
+@Getter
+@Setter
+@SuperBuilder(toBuilder = true)
+@NoArgsConstructor
+@Document(collection = "users")
+public abstract class User {
 
     @Id
     private String id;
+
     private String fullName;
+
+    @Indexed(unique = true)
     private String email;
+
     private String passwordHash;
-    private Role role;
+
     private boolean emailVerified;
 
-    public enum Role {
-        ADMIN,
-        DOCTOR,
-        PATIENT
-    }
+    private Role role;
 
-    public User(String id, String fullName, String email, String passwordHash, Role role, boolean emailVerified) {
-        this.id = id;
-        this.fullName = fullName;
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.role = role;
-        this.emailVerified = emailVerified;
-    }
+    private String phone;
 
-    public String getId() {
-        return id;
-    }
+    private String avatarUrl;
 
-    public String getFullName() {
-        return fullName;
-    }
+    private Address address;
 
-    public String getEmail() {
-        return email;
-    }
+    @CreatedDate
+    private Instant createdAt;
 
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public boolean isEmailVerified() {
-        return emailVerified;
-    }
+    @LastModifiedDate
+    private Instant updatedAt;
 }
