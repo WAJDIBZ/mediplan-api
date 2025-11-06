@@ -13,7 +13,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
-
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfiguration {
@@ -21,6 +20,7 @@ public class SecurityConfiguration {
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler; // <— add a failure handler
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -30,27 +30,32 @@ public class SecurityConfiguration {
                     CorsConfiguration c = new CorsConfiguration();
                     c.setAllowedOrigins(List.of(
                             "http://localhost:3000",
-                            "https://mediplan-api-1b2c88de81dd.herokuapp.com"
+                            // PUT YOUR REAL FRONTEND ORIGIN HERE (e.g. Vercel/Netlify domain)
+                            "https://your-frontend.example.com"
                     ));
-                    c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-                    c.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+                    c.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+                    c.setAllowedHeaders(List.of("Authorization","Content-Type"));
                     c.setAllowCredentials(true);
                     return c;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**",
+                        .requestMatchers(
+                                "/api/auth/**",
                                 "/actuator/**",
                                 "/error",
                                 "/oauth2/**",
-                                "/login/oauth2/**").permitAll()
+                                "/login/oauth2/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                // IMPORTANT: let Spring create a session when needed (for OAuth2)
+                .sessionManagement(sm -> sm.sessionCreationPolicy(
+                        org.springframework.security.config.http.SessionCreationPolicy.IF_REQUIRED
+                ))
                 .oauth2Login(oauth -> oauth
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .userInfoEndpoint(u -> u.userService(customOAuth2UserService))
                         .successHandler(oAuth2LoginSuccessHandler)
+                        .failureHandler(oAuth2LoginFailureHandler)   // <— helps you see real cause if it fails
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
