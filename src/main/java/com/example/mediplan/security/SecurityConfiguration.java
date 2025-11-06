@@ -1,6 +1,8 @@
 package com.example.mediplan.security;
 
 import com.example.mediplan.security.jwt.JwtAuthFilter;
+import com.example.mediplan.security.oauth.CustomOAuth2UserService;
+import com.example.mediplan.security.oauth.OAuth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +15,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import java.util.List;
 
 @Configuration
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 

@@ -1,4 +1,4 @@
-package com.example.mediplan.user;
+package com.example.mediplan.admin.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Address {
+public class AdminAddressDTO {
     private String line1;
     private String line2;
     private String city;

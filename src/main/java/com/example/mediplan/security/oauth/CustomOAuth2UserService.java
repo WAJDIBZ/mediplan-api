@@ -112,6 +112,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         User user = byEmail.or(() -> byProvider).orElse(null);
 
+        if (user != null && !user.isActive()) {
+            throw new OAuth2AuthenticationException(new OAuth2Error("account_disabled"),
+                    "Ce compte est désactivé. Contactez le support.");
+        }
+
         if (user == null) {
             user = Patient.builder()
                     .fullName(profile.displayName())

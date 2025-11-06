@@ -15,7 +15,7 @@ public class OpenApiConfig {
                 .components(new Components())
                 .info(new Info()
                         .title("MediPlan API")
-                        .description("Endpoints d'authentification pour patients et médecins")
+                        .description("Authentification, inscription et administration des profils (patients, médecins, administrateurs)")
                         .version("1.0.0"));
     }
 }

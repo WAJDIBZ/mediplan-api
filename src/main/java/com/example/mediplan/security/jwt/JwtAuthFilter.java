@@ -1,5 +1,6 @@
 package com.example.mediplan.security.jwt;
 
+import com.example.mediplan.user.User;
 import com.example.mediplan.user.UserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
