@@ -1,70 +1,77 @@
+// src/main/java/com/example/mediplan/user/UserMapper.java
 package com.example.mediplan.user;
 
-import com.example.mediplan.auth.dto.AddressDTO;
-import com.example.mediplan.auth.dto.DoctorRegisterRequest;
-import com.example.mediplan.auth.dto.EmergencyContactDTO;
-import com.example.mediplan.auth.dto.PatientRegisterRequest;
 import org.springframework.stereotype.Component;
+
+import com.example.mediplan.auth.dto.PatientRegisterRequest;
+import com.example.mediplan.auth.dto.DoctorRegisterRequest;
+import com.example.mediplan.auth.dto.AddressDTO;
+import com.example.mediplan.auth.dto.EmergencyContactDTO;
 
 @Component
 public class UserMapper {
 
-    public Patient toPatient(PatientRegisterRequest request, String hashedPassword, String normalizedEmail) {
+    // -------- Patient --------
+    public Patient toPatient(PatientRegisterRequest dto, String passwordHash, String emailLower) {
         return Patient.builder()
-                .fullName(request.getFullName())
-                .email(normalizedEmail)
-                .passwordHash(hashedPassword)
-                .provider("LOCAL")
+                .fullName(trim(dto.getFullName()))
+                .email(emailLower)                 // <- on utilise le param déjà en lower
+                .passwordHash(passwordHash)
+                .phone(trimNullable(dto.getPhone()))
+                .avatarUrl(trimNullable(dto.getAvatarUrl()))
+                .address(map(dto.getAddress()))   // <- adresse perso (optionnelle)
                 .role(Role.PATIENT)
-                .emailVerified(false)
-                .phone(request.getPhone())
-                .address(toAddress(request.getAddress()))
-                .dateOfBirth(request.getDateOfBirth())
-                .gender(request.getGender())
-                .insuranceNumber(request.getInsuranceNumber())
-                .emergencyContact(toEmergencyContact(request.getEmergencyContact()))
+                .dateOfBirth(dto.getDateOfBirth())
+                .gender(dto.getGender())
+                .insuranceNumber(trimNullable(dto.getInsuranceNumber()))
+                .emergencyContact(map(dto.getEmergencyContact()))
                 .build();
     }
 
-    public Medecin toMedecin(DoctorRegisterRequest request, String hashedPassword, String normalizedEmail) {
+    // -------- Médecin --------
+    public Medecin toMedecin(DoctorRegisterRequest dto, String passwordHash, String emailLower) {
         return Medecin.builder()
-                .fullName(request.getFullName())
-                .email(normalizedEmail)
-                .passwordHash(hashedPassword)
-                .provider("LOCAL")
-                .role(Role.MEDECIN)
-                .emailVerified(false)
-                .phone(request.getPhone())
-                .avatarUrl(request.getAvatarUrl())
-                .specialty(request.getSpecialty())
-                .licenseNumber(request.getLicenseNumber())
-                .yearsOfExperience(request.getYearsOfExperience())
-                .clinicName(request.getClinicName())
-                .clinicAddress(toAddress(request.getClinicAddress()))
+                .fullName(trim(dto.getFullName()))
+                .email(emailLower)
+                .passwordHash(passwordHash)
+                .phone(trimNullable(dto.getPhone()))
+                .avatarUrl(trimNullable(dto.getAvatarUrl()))
+                .address(map(dto.getAddress()))          // <- adresse perso (si tu l’envoies)
+                .role(Role.DOCTOR)
+                .specialty(trim(dto.getSpecialty()))
+                .licenseNumber(trim(dto.getLicenseNumber()))
+                .yearsOfExperience(dto.getYearsOfExperience())
+                .clinicName(trimNullable(dto.getClinicName()))
+                .clinicAddress(map(dto.getClinicAddress()))  // <- adresse du cabinet (optionnelle)
                 .build();
     }
 
-    private Address toAddress(AddressDTO dto) {
-        if (dto == null) {
-            return null;
-        }
+    // -------- Helpers mapping --------
+    private Address map(AddressDTO d) {
+        if (d == null) return null;
         return Address.builder()
-                .line1(dto.getLine1())
-                .line2(dto.getLine2())
-                .city(dto.getCity())
-                .country(dto.getCountry())
-                .zip(dto.getZip())
+                .line1(trim(d.getLine1()))
+                .line2(trimNullable(d.getLine2()))
+                .city(trim(d.getCity()))
+                .country(trim(d.getCountry()))
+                .zip(trim(d.getZip()))
                 .build();
     }
 
-    private EmergencyContact toEmergencyContact(EmergencyContactDTO dto) {
-        if (dto == null) {
-            return null;
-        }
+    private EmergencyContact map(EmergencyContactDTO ec) {
+        if (ec == null) return null;
         return EmergencyContact.builder()
-                .name(dto.getName())
-                .phone(dto.getPhone())
-                .relation(dto.getRelation())
+                .name(trim(ec.getName()))
+                .phone(trim(ec.getPhone()))
+                .relation(trim(ec.getRelation()))
                 .build();
+    }
+
+    private static String trim(String s) {
+        return s == null ? null : s.trim();
+    }
+
+    private static String trimNullable(String s) {
+        return s == null ? null : s.trim().isEmpty() ? null : s.trim();
     }
 }

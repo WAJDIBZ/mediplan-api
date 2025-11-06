@@ -13,10 +13,5 @@ public interface UserRepository extends MongoRepository<User, String>, UserRepos
     Optional<User> findByEmailIgnoreCase(String email);
 
     boolean existsByEmail(String email);
-
-    boolean existsByLicenseNumber(String licenseNumber);
-
-    Optional<User> findByLicenseNumber(String licenseNumber);
-
     Optional<User> findByProviderAndProviderId(String provider, String providerId);
 }

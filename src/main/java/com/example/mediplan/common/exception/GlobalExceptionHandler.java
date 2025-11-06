@@ -38,18 +38,6 @@ public class GlobalExceptionHandler {
         return Map.of("message", ex.getMessage());
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleNotFound(ResourceNotFoundException ex) {
-        return Map.of("message", ex.getMessage());
-    }
-
-    @ExceptionHandler(BusinessRuleException.class)
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    public Map<String, String> handleBusinessRule(BusinessRuleException ex) {
-        return Map.of("message", ex.getMessage());
-    }
-
     @ExceptionHandler(DuplicateKeyException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> handleDuplicateKey(DuplicateKeyException ex) {

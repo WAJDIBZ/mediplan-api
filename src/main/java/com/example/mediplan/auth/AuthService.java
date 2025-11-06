@@ -61,9 +61,6 @@ public class AuthService {
 
         User user = userService.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new InvalidCredentialsException("Identifiants invalides."));
-        if (!user.isActive()) {
-            throw new InvalidCredentialsException("Compte désactivé. Contactez un administrateur.");
-        }
         if (!userService.checkPassword(password, user.getPasswordHash())) {
             throw new InvalidCredentialsException("Identifiants invalides.");
         }
@@ -75,9 +72,6 @@ public class AuthService {
         String userId = claims.getSubject();
         User user = userService.findById(userId)
                 .orElseThrow(() -> new InvalidCredentialsException("Utilisateur introuvable."));
-        if (!user.isActive()) {
-            throw new InvalidCredentialsException("Compte désactivé. Contactez un administrateur.");
-        }
         return generateTokens(user);
     }
 

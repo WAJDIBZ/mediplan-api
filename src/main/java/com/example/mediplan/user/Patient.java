@@ -1,19 +1,21 @@
 package com.example.mediplan.user;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Getter
-@Setter
-@SuperBuilder(toBuilder = true)
-@NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-@Document(collection = "users")
+import java.time.LocalDate;
+
+@Document("users")
 @TypeAlias("patient")
+@Data @NoArgsConstructor @AllArgsConstructor @EqualsAndHashCode(callSuper = true) @SuperBuilder
 public class Patient extends User {
+
+    private LocalDate dateOfBirth;
+    private Gender gender;
+    private String insuranceNumber;
+    private EmergencyContact emergencyContact;
+
+
 }
