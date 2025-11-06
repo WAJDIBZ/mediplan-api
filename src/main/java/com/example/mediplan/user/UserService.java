@@ -55,7 +55,5 @@ public class UserService {
         return userRepository.findByProviderAndProviderId(provider, providerId);
     }
 
-    public String hashPassword(String rawPassword) {
-        return passwordEncoder.encode(rawPassword);
-    }
+
 }
