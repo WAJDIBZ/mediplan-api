@@ -20,6 +20,9 @@ public class PatientRegisterRequest {
     @Schema(example = "Claire Martin")
     private String fullName;
 
+    @Schema(example = "https://example.com/avatar.jpg")
+    private String avatarUrl;
+
     @NotBlank(message = "L'email est obligatoire")
     @Email(message = "L'email doit être valide")
     @Schema(example = "claire.martin@example.com")

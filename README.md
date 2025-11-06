@@ -112,17 +112,3 @@ Réponse :
   }
 }
 ```
-
-## Variables d'environnement attendues
-
-| Nom                       | Description                                                                 | Obligatoire |
-|---------------------------|------------------------------------------------------------------------------|-------------|
-| `MONGO_URI`               | Chaîne de connexion MongoDB                                                 | ✅          |
-| `JWT_ACCESS_SECRET`       | Secret pour signer les tokens d'accès JWT                                   | ✅          |
-| `JWT_REFRESH_SECRET`      | Secret pour signer les tokens de rafraîchissement                           | ✅          |
-| `GOOGLE_CLIENT_ID`        | Identifiant OAuth2 Google                                                    | ✅          |
-| `GOOGLE_CLIENT_SECRET`    | Secret OAuth2 Google                                                         | ✅          |
-| `FACEBOOK_CLIENT_ID`      | Identifiant OAuth2 Facebook                                                  | ✅          |
-| `FACEBOOK_CLIENT_SECRET`  | Secret OAuth2 Facebook                                                       | ✅          |
-| `FRONT_REDIRECT_URL`      | URL de redirection front (défaut `http://localhost:3000/oauth/success`)    | ❌ (défaut) |
-| `APP_OAUTH_REDIRECT_MODE` | `QUERY` (défaut) pour renvoyer les tokens en query, `COOKIES` pour cookies | ❌          |
