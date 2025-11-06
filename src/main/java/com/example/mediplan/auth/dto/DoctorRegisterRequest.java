@@ -49,6 +49,9 @@ public class DoctorRegisterRequest {
     @Schema(example = "Clinique du Parc")
     private String clinicName;
 
+    @Valid
+    private AddressDTO address;
+
     @Schema(example = "https://cdn.example.com/avatars/doctor.png")
     private String avatarUrl;
 }

@@ -1,6 +1,7 @@
 package com.example.mediplan.user;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -10,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 
 @Document("users")
-@Data @Builder @NoArgsConstructor @AllArgsConstructor
+@Data @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 public class User {
 
     @Id
@@ -22,11 +23,13 @@ public class User {
     private String email;
 
     private String passwordHash;
-
     private boolean emailVerified;
 
     private String phone;
     private String avatarUrl;
+
+    // <— AJOUTÉ : le mapper attend .address(...)
+    private Address address;
 
     @CreatedDate
     private Instant createdAt;
@@ -34,7 +37,5 @@ public class User {
     @LastModifiedDate
     private Instant updatedAt;
 
-    private Role role;
-
-
+    private Role role; // enum top-level: com.example.mediplan.user.Role
 }
