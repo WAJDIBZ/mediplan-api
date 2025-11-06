@@ -49,9 +49,8 @@ public class SecurityConfiguration {
                         .anyRequest().authenticated()
                 )
                 // IMPORTANT: let Spring create a session when needed (for OAuth2)
-                .sessionManagement(sm -> sm.sessionCreationPolicy(
-                        org.springframework.security.config.http.SessionCreationPolicy.IF_REQUIRED
-                ))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(u -> u.userService(customOAuth2UserService))
                         .successHandler(oAuth2LoginSuccessHandler)

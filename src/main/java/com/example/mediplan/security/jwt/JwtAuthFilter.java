@@ -31,53 +31,44 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String path = request.getRequestURI();
         final String method = request.getMethod();
 
-        // ✅ Always skip CORS preflight
+        // 1) Preflight
         if ("OPTIONS".equalsIgnoreCase(method)) {
             chain.doFilter(request, response);
             return;
         }
 
-        // ✅ Public endpoints (no auth required)
+        // 2) Public + OAuth2 paths
         if (path.startsWith("/api/auth/")
                 || path.startsWith("/actuator/")
+                || path.startsWith("/oauth2/")
+                || path.startsWith("/login/oauth2/")
                 || "/error".equals(path)) {
             chain.doFilter(request, response);
             return;
         }
 
-        // ✅ CRITICAL: let Spring Security OAuth2 handle these fully
-        if (path.startsWith("/oauth2/") || path.startsWith("/login/oauth2/")) {
-            chain.doFilter(request, response);
-            return;
-        }
-
-        // ✅ If there is no Bearer token, do not block — just continue
-        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        // 3) No bearer? just continue (do NOT 401 here)
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Parse & set authentication when token is valid; otherwise just continue
+        // 4) Validate token (if present) and continue
         try {
-            final String token = authHeader.substring(7);
+            String token = authHeader.substring(7);
             Claims claims = jwtService.parseAccessToken(token).getBody();
             String userId = claims.getSubject();
             String role = claims.get("role", String.class);
-
             userRepository.findById(userId).ifPresent(u -> {
                 var auth = new UsernamePasswordAuthenticationToken(
-                        u.getId(),
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                );
+                        u.getId(), null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 request.setAttribute("userId", u.getId());
             });
-        } catch (Exception ignored) {
-            // Do not fail the request here; security rules will handle unauthenticated access.
-        }
+        } catch (Exception ignored) { /* do not block here */ }
 
         chain.doFilter(request, response);
     }
+
 }
