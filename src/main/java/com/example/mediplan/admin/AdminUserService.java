@@ -10,14 +10,7 @@ import com.example.mediplan.admin.dto.AdminUserListItemDTO;
 import com.example.mediplan.common.exception.BusinessRuleException;
 import com.example.mediplan.common.exception.ResourceConflictException;
 import com.example.mediplan.common.exception.ResourceNotFoundException;
-import com.example.mediplan.user.AdminUserFilter;
-import com.example.mediplan.user.Administrator;
-import com.example.mediplan.user.Medecin;
-import com.example.mediplan.user.Patient;
-import com.example.mediplan.user.Role;
-import com.example.mediplan.user.User;
-import com.example.mediplan.user.UserRepository;
-import com.example.mediplan.user.UserService;
+import com.example.mediplan.user.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +35,8 @@ public class AdminUserService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final AdminUserMapper mapper;
+
+    /* ========== Queries & Reads ========== */
 
     public Page<AdminUserListItemDTO> listUsers(String q, Role role, Boolean active, String provider, Pageable pageable) {
         String normalizedProvider = trimToNull(provider);
@@ -59,24 +53,30 @@ public class AdminUserService {
         return mapper.toDetails(getById(id));
     }
 
+    /* ========== Create / Update / Delete ========== */
+
     public AdminUserDetailsDTO createUser(AdminCreateUserRequest request) {
         sanitizeCreateRequest(request);
+
         String email = requireNormalizedEmail(request.getEmail());
         ensureEmailAvailable(email, null);
 
         Role role = request.getRole();
         String licenseNumber = trimToNull(request.getLicenseNumber());
+        String specialty = trimToNull(request.getSpecialty());
+
         if (role == Role.MEDECIN) {
             if (!StringUtils.hasText(licenseNumber)) {
                 throw new BusinessRuleException("Le numéro de licence est requis pour un médecin.");
             }
-            if (!StringUtils.hasText(request.getSpecialty())) {
+            if (!StringUtils.hasText(specialty)) {
                 throw new BusinessRuleException("La spécialité est obligatoire pour un médecin.");
             }
-            ensureLicenseAvailable(licenseNumber, null);
+            // On création, l'unicité est simple
+            ensureLicenseUniqueOnCreate(licenseNumber);
         }
 
-        User user = buildUserForCreation(request, email, licenseNumber);
+        User user = buildUserForCreation(request, email, licenseNumber, specialty);
         User saved = userRepository.save(user);
         return mapper.toDetails(saved);
     }
@@ -85,6 +85,7 @@ public class AdminUserService {
         sanitizeUpdateRequest(request);
         User user = getById(id);
 
+        // ---- Common fields (base User)
         if (request.getFullName() != null) {
             user.setFullName(request.getFullName());
         }
@@ -105,39 +106,59 @@ public class AdminUserService {
         if (request.getAddress() != null) {
             user.setAddress(mapper.toAddress(request.getAddress()));
         }
-        if (request.getInsuranceNumber() != null) {
-            user.setInsuranceNumber(trimToNull(request.getInsuranceNumber()));
-        }
-        if (request.getEmergencyContact() != null) {
-            user.setEmergencyContact(mapper.toEmergencyContact(request.getEmergencyContact()));
-        }
-        if (request.getSpecialty() != null || request.getLicenseNumber() != null || request.getYearsOfExperience() != null
-                || request.getClinicName() != null || request.getClinicAddress() != null) {
-            ensureRoleIsMedecin(user);
-        }
-        if (request.getSpecialty() != null) {
-            String specialty = trimToNull(request.getSpecialty());
-            if (!StringUtils.hasText(specialty)) {
-                throw new BusinessRuleException("La spécialité est obligatoire pour un médecin.");
+
+        // ---- Patient-only fields
+        if (request.getInsuranceNumber() != null || request.getEmergencyContact() != null) {
+            if (!(user instanceof Patient p)) {
+                throw new BusinessRuleException("Champs patient uniquement (insuranceNumber, emergencyContact).");
             }
-            user.setSpecialty(specialty);
-        }
-        if (request.getLicenseNumber() != null) {
-            String licenseNumber = trimToNull(request.getLicenseNumber());
-            if (!StringUtils.hasText(licenseNumber)) {
-                throw new BusinessRuleException("Le numéro de licence est requis pour un médecin.");
+            if (request.getInsuranceNumber() != null) {
+                p.setInsuranceNumber(trimToNull(request.getInsuranceNumber()));
             }
-            ensureLicenseAvailable(licenseNumber, user.getId());
-            user.setLicenseNumber(licenseNumber);
+            if (request.getEmergencyContact() != null) {
+                p.setEmergencyContact(mapper.toEmergencyContact(request.getEmergencyContact()));
+            }
         }
-        if (request.getYearsOfExperience() != null) {
-            user.setYearsOfExperience(request.getYearsOfExperience());
-        }
-        if (request.getClinicName() != null) {
-            user.setClinicName(trimToNull(request.getClinicName()));
-        }
-        if (request.getClinicAddress() != null) {
-            user.setClinicAddress(mapper.toAddress(request.getClinicAddress()));
+
+        // ---- Medecin-only fields
+        boolean wantsDoctorFields =
+                request.getSpecialty() != null ||
+                        request.getLicenseNumber() != null ||
+                        request.getYearsOfExperience() != null ||
+                        request.getClinicName() != null ||
+                        request.getClinicAddress() != null;
+
+        if (wantsDoctorFields) {
+            if (!(user instanceof Medecin m)) {
+                throw new BusinessRuleException("Champs médecin uniquement (specialty, licenseNumber, yearsOfExperience, clinic...).");
+            }
+            if (request.getSpecialty() != null) {
+                String specialty = trimToNull(request.getSpecialty());
+                if (!StringUtils.hasText(specialty)) {
+                    throw new BusinessRuleException("La spécialité est obligatoire pour un médecin.");
+                }
+                m.setSpecialty(specialty);
+            }
+            if (request.getLicenseNumber() != null) {
+                String newLicense = trimToNull(request.getLicenseNumber());
+                if (!StringUtils.hasText(newLicense)) {
+                    throw new BusinessRuleException("Le numéro de licence est requis pour un médecin.");
+                }
+                // Vérifier l'unicité seulement si changé
+                if (!Objects.equals(newLicense, m.getLicenseNumber())) {
+                    ensureLicenseUniqueOnUpdate(newLicense, m.getLicenseNumber());
+                    m.setLicenseNumber(newLicense);
+                }
+            }
+            if (request.getYearsOfExperience() != null) {
+                m.setYearsOfExperience(request.getYearsOfExperience());
+            }
+            if (request.getClinicName() != null) {
+                m.setClinicName(trimToNull(request.getClinicName()));
+            }
+            if (request.getClinicAddress() != null) {
+                m.setClinicAddress(mapper.toAddress(request.getClinicAddress()));
+            }
         }
 
         User saved = userRepository.save(user);
@@ -183,16 +204,40 @@ public class AdminUserService {
         if (current.getRole() == targetRole) {
             return mapper.toDetails(current);
         }
+
         User converted = switch (targetRole) {
             case ADMIN -> convertToAdministrator(current);
             case PATIENT -> convertToPatient(current);
-            case MEDECIN -> convertToMedecin(current);
+            case MEDECIN -> {
+                // pull doctor fields from the request; they are required when promoting to MEDECIN
+                String specialty = trimToNull(request.getSpecialty());
+                String license   = trimToNull(request.getLicenseNumber());
+                Integer yoe      = request.getYearsOfExperience();
+                String clinic    = trimToNull(request.getClinicName());
+                var clinicAddr   = mapper.toAddress(request.getClinicAddress());
+
+                if (!org.springframework.util.StringUtils.hasText(specialty)) {
+                    throw new BusinessRuleException("La spécialité est obligatoire pour promouvoir en médecin.");
+                }
+                if (!org.springframework.util.StringUtils.hasText(license)) {
+                    throw new BusinessRuleException("Le numéro de licence est obligatoire pour promouvoir en médecin.");
+                }
+
+                // If you enforce uniqueness here, uncomment:
+                // ensureLicenseAvailable(license, current.getId());
+
+                yield convertToMedecin(current, specialty, license, yoe, clinic, clinicAddr);
+            }
         };
+
         converted.setRole(targetRole);
         User saved = userRepository.save(converted);
         LOGGER.info("Changement de rôle pour l'utilisateur {} : {} -> {}", id, current.getRole(), targetRole);
         return mapper.toDetails(saved);
     }
+
+
+    /* ========== Bulk Ops ========== */
 
     public void bulkDeactivate(AdminBulkActionRequest request) {
         for (String id : request.getIds()) {
@@ -221,6 +266,8 @@ public class AdminUserService {
         }
     }
 
+    /* ========== Export ========== */
+
     public byte[] exportCsv(String q, Role role, Boolean active, String provider, Sort sort) {
         String normalizedProvider = trimToNull(provider);
         AdminUserFilter filter = AdminUserFilter.builder()
@@ -234,13 +281,41 @@ public class AdminUserService {
         return csv.getBytes(StandardCharsets.UTF_8);
     }
 
-    private User buildUserForCreation(AdminCreateUserRequest request, String email, String licenseNumber) {
+    private String buildCsv(List<User> users) {
+        String header = "id,fullName,email,role,active,provider,createdAt";
+        List<String> rows = users.stream()
+                .map(user -> String.join(",",
+                        escapeCsvValue(user.getId()),
+                        escapeCsvValue(user.getFullName()),
+                        escapeCsvValue(user.getEmail()),
+                        escapeCsvValue(user.getRole() != null ? user.getRole().name() : ""),
+                        escapeCsvValue(String.valueOf(user.isActive())),
+                        escapeCsvValue(user.getProvider()),
+                        escapeCsvValue(user.getCreatedAt() != null ? user.getCreatedAt().toString() : "")
+                ))
+                .collect(Collectors.toList());
+        if (rows.isEmpty()) {
+            return header;
+        }
+        return header + "\n" + String.join("\n", rows);
+    }
+
+    private String escapeCsvValue(String value) {
+        if (value == null) return "";
+        String escaped = value.replace("\"", "\"\"");
+        if (escaped.contains(",") || escaped.contains("\n") || escaped.contains("\r")) {
+            return '"' + escaped + '"';
+        }
+        return escaped;
+    }
+
+    /* ========== Builders & Converters ========== */
+
+    private User buildUserForCreation(AdminCreateUserRequest request, String email, String licenseNumber, String specialty) {
         String passwordHash = request.getPassword() != null ? userService.hashPassword(request.getPassword()) : null;
         String phone = trimToNull(request.getPhone());
         String avatarUrl = trimToNull(request.getAvatarUrl());
-        String insuranceNumber = trimToNull(request.getInsuranceNumber());
-        String specialty = trimToNull(request.getSpecialty());
-        String clinicName = trimToNull(request.getClinicName());
+
         switch (request.getRole()) {
             case PATIENT:
                 return Patient.builder()
@@ -250,12 +325,14 @@ public class AdminUserService {
                         .role(Role.PATIENT)
                         .emailVerified(false)
                         .provider("LOCAL")
+                        .active(true)
                         .phone(phone)
                         .avatarUrl(avatarUrl)
                         .address(mapper.toAddress(request.getAddress()))
-                        .insuranceNumber(insuranceNumber)
+                        .insuranceNumber(trimToNull(request.getInsuranceNumber()))
                         .emergencyContact(mapper.toEmergencyContact(request.getEmergencyContact()))
                         .build();
+
             case MEDECIN:
                 return Medecin.builder()
                         .fullName(request.getFullName())
@@ -264,14 +341,16 @@ public class AdminUserService {
                         .role(Role.MEDECIN)
                         .emailVerified(false)
                         .provider("LOCAL")
+                        .active(true)
                         .phone(phone)
                         .avatarUrl(avatarUrl)
                         .specialty(specialty)
                         .licenseNumber(licenseNumber)
                         .yearsOfExperience(request.getYearsOfExperience())
-                        .clinicName(clinicName)
+                        .clinicName(trimToNull(request.getClinicName()))
                         .clinicAddress(mapper.toAddress(request.getClinicAddress()))
                         .build();
+
             case ADMIN:
                 return Administrator.builder()
                         .fullName(request.getFullName())
@@ -280,10 +359,12 @@ public class AdminUserService {
                         .role(Role.ADMIN)
                         .emailVerified(false)
                         .provider("LOCAL")
+                        .active(true)
                         .phone(phone)
                         .avatarUrl(avatarUrl)
                         .address(mapper.toAddress(request.getAddress()))
                         .build();
+
             default:
                 throw new IllegalStateException("Rôle non pris en charge");
         }
@@ -301,18 +382,20 @@ public class AdminUserService {
                 .phone(user.getPhone())
                 .avatarUrl(user.getAvatarUrl())
                 .address(user.getAddress())
-                .dateOfBirth(user.getDateOfBirth())
-                .gender(user.getGender())
-                .insuranceNumber(user.getInsuranceNumber())
-                .emergencyContact(user.getEmergencyContact())
-                .specialty(user.getSpecialty())
-                .licenseNumber(user.getLicenseNumber())
-                .yearsOfExperience(user.getYearsOfExperience())
-                .clinicName(user.getClinicName())
-                .clinicAddress(user.getClinicAddress())
                 .provider(user.getProvider())
                 .providerId(user.getProviderId())
                 .build();
+
+        if (user instanceof Patient p) {
+            // copy patient extras if present
+            // (only if you really want admins to carry over these fields)
+            // e.g. store them somewhere else or just ignore
+            // admin.setWhatever(...);  // usually admins don’t have these
+        }
+        if (user instanceof Medecin m) {
+            // same comment as above
+        }
+
         admin.setCreatedAt(user.getCreatedAt());
         admin.setUpdatedAt(user.getUpdatedAt());
         return admin;
@@ -330,28 +413,37 @@ public class AdminUserService {
                 .phone(user.getPhone())
                 .avatarUrl(user.getAvatarUrl())
                 .address(user.getAddress())
-                .dateOfBirth(user.getDateOfBirth())
-                .gender(user.getGender())
                 .provider(user.getProvider())
                 .providerId(user.getProviderId())
-                .insuranceNumber(user.getInsuranceNumber())
-                .emergencyContact(user.getEmergencyContact())
                 .build();
+
+        // If the source user already is a Patient, copy its patient fields:
+        if (user instanceof Patient p0) {
+            patient.setDateOfBirth(p0.getDateOfBirth());
+            patient.setGender(p0.getGender());
+            patient.setInsuranceNumber(p0.getInsuranceNumber());
+            patient.setEmergencyContact(p0.getEmergencyContact());
+        }
+
         patient.setCreatedAt(user.getCreatedAt());
         patient.setUpdatedAt(user.getUpdatedAt());
         return patient;
     }
 
-    private User convertToMedecin(User user) {
-        String license = trimToNull(user.getLicenseNumber());
-        if (!StringUtils.hasText(license)) {
-            throw new BusinessRuleException("Impossible de promouvoir cet utilisateur : licence manquante.");
-        }
-        String specialty = trimToNull(user.getSpecialty());
-        if (!StringUtils.hasText(specialty)) {
-            throw new BusinessRuleException("Impossible de promouvoir cet utilisateur : spécialité manquante.");
-        }
-        ensureLicenseAvailable(license, user.getId());
+
+    private User convertToMedecin(
+            User user,
+            String specialty,
+            String licenseNumber,
+            Integer yearsOfExperience,
+            String clinicName,
+            Address clinicAddress
+    ) {
+        String sp = trimToNull(specialty);
+        String lic = trimToNull(licenseNumber);
+        if (!StringUtils.hasText(lic)) throw new BusinessRuleException("Licence requise.");
+        if (!StringUtils.hasText(sp))  throw new BusinessRuleException("Spécialité requise.");
+
         Medecin medecin = Medecin.builder()
                 .id(user.getId())
                 .fullName(user.getFullName())
@@ -364,30 +456,41 @@ public class AdminUserService {
                 .avatarUrl(user.getAvatarUrl())
                 .provider(user.getProvider())
                 .providerId(user.getProviderId())
-                .specialty(specialty)
-                .licenseNumber(license)
-                .yearsOfExperience(user.getYearsOfExperience())
-                .clinicName(user.getClinicName())
-                .clinicAddress(user.getClinicAddress())
+                .specialty(sp)
+                .licenseNumber(lic)
+                .yearsOfExperience(yearsOfExperience)
+                .clinicName(trimToNull(clinicName))
+                .clinicAddress(clinicAddress)
                 .build();
+
         medecin.setCreatedAt(user.getCreatedAt());
         medecin.setUpdatedAt(user.getUpdatedAt());
         return medecin;
     }
 
+
+    /* ========== Guards & Sanitizers ========== */
+
     private void ensureEmailAvailable(String email, String currentId) {
-        Optional<User> existing = userRepository.findByEmailIgnoreCase(email);
-        if (existing.isPresent() && !Objects.equals(existing.get().getId(), currentId)) {
-            throw new ResourceConflictException("Cet email est déjà utilisé.");
+        userRepository.findByEmailIgnoreCase(email).ifPresent(existing -> {
+            if (!Objects.equals(existing.getId(), currentId)) {
+                throw new ResourceConflictException("Cet email est déjà utilisé.");
+            }
+        });
+    }
+
+    /** Unicité à la création : simple exists -> conflit */
+    private void ensureLicenseUniqueOnCreate(String licenseNumber) {
+        if (StringUtils.hasText(licenseNumber) && userService.licenseExists(licenseNumber)) {
+            throw new ResourceConflictException("Ce numéro de licence est déjà enregistré.");
         }
     }
 
-    private void ensureLicenseAvailable(String licenseNumber, String currentId) {
-        if (!StringUtils.hasText(licenseNumber)) {
-            return;
-        }
-        Optional<User> existing = userRepository.findByLicenseNumber(licenseNumber);
-        if (existing.isPresent() && !Objects.equals(existing.get().getId(), currentId)) {
+    /** Unicité à la mise à jour : si changement, vérifier exists -> conflit */
+    private void ensureLicenseUniqueOnUpdate(String newLicense, String currentLicense) {
+        if (!StringUtils.hasText(newLicense)) return;
+        if (Objects.equals(newLicense, currentLicense)) return;
+        if (userService.licenseExists(newLicense)) {
             throw new ResourceConflictException("Ce numéro de licence est déjà enregistré.");
         }
     }
@@ -395,12 +498,6 @@ public class AdminUserService {
     private User getById(String id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
-    }
-
-    private void ensureRoleIsMedecin(User user) {
-        if (user.getRole() != Role.MEDECIN) {
-            throw new BusinessRuleException("Ces champs ne sont disponibles que pour les médecins.");
-        }
     }
 
     private void sanitizeCreateRequest(AdminCreateUserRequest request) {
@@ -434,9 +531,7 @@ public class AdminUserService {
     }
 
     private void sanitizeAddress(com.example.mediplan.admin.dto.AdminAddressInput address) {
-        if (address == null) {
-            return;
-        }
+        if (address == null) return;
         address.setLine1(trim(address.getLine1()));
         address.setLine2(trimToNull(address.getLine2()));
         address.setCity(trim(address.getCity()));
@@ -445,9 +540,7 @@ public class AdminUserService {
     }
 
     private void sanitizeEmergencyContact(com.example.mediplan.admin.dto.AdminEmergencyContactInput contact) {
-        if (contact == null) {
-            return;
-        }
+        if (contact == null) return;
         contact.setName(trim(contact.getName()));
         contact.setPhone(trim(contact.getPhone()));
         contact.setRelation(trim(contact.getRelation()));
@@ -471,37 +564,7 @@ public class AdminUserService {
     }
 
     private String trimToNull(String value) {
-        String trimmed = trim(value);
-        return StringUtils.hasText(trimmed) ? trimmed : null;
-    }
-
-    private String buildCsv(List<User> users) {
-        String header = "id,fullName,email,role,active,provider,createdAt";
-        List<String> rows = users.stream()
-                .map(user -> String.join(",",
-                        escapeCsvValue(user.getId()),
-                        escapeCsvValue(user.getFullName()),
-                        escapeCsvValue(user.getEmail()),
-                        escapeCsvValue(user.getRole() != null ? user.getRole().name() : ""),
-                        escapeCsvValue(String.valueOf(user.isActive())),
-                        escapeCsvValue(user.getProvider()),
-                        escapeCsvValue(user.getCreatedAt() != null ? user.getCreatedAt().toString() : "")
-                ))
-                .collect(Collectors.toList());
-        if (rows.isEmpty()) {
-            return header;
-        }
-        return header + "\n" + String.join("\n", rows);
-    }
-
-    private String escapeCsvValue(String value) {
-        if (value == null) {
-            return "";
-        }
-        String escaped = value.replace("\"", "\"\"");
-        if (escaped.contains(",") || escaped.contains("\n") || escaped.contains("\r")) {
-            return '"' + escaped + '"';
-        }
-        return escaped;
+        String t = trim(value);
+        return StringUtils.hasText(t) ? t : null;
     }
 }

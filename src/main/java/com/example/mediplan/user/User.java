@@ -42,4 +42,8 @@ public class User {
     private Instant updatedAt;
 
     private Role role; // enum top-level: com.example.mediplan.user.Role
+
+    private boolean active = true;
+
+
 }
