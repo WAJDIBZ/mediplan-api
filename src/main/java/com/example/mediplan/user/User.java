@@ -27,6 +27,8 @@ public class User {
 
     private String phone;
     private String avatarUrl;
+    private String provider;     // "GOOGLE" | "FACEBOOK" | "LOCAL"
+    private String providerId;   // sub/id from provider
 
     // <— AJOUTÉ : le mapper attend .address(...)
     private Address address;
