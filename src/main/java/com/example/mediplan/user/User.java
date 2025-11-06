@@ -1,63 +1,86 @@
 package com.example.mediplan.user;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Builder.Default;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
-@Document(collection = "users")
-@Data
-@Builder(toBuilder = true)
+import java.time.Instant;
+import java.time.LocalDate;
+
+@Getter
+@Setter
+@SuperBuilder(toBuilder = true)
 @NoArgsConstructor
-
+@Document(collection = "users")
+@CompoundIndexes({
+        @CompoundIndex(name = "provider_providerId_idx", def = "{'provider': 1, 'providerId': 1}", unique = true, sparse = true)
+})
 public class User {
 
     @Id
     private String id;
+
+    @Indexed
     private String fullName;
+
+    @Indexed(unique = true)
     private String email;
+
     private String passwordHash;
-    private Role role;
+
     private boolean emailVerified;
 
-    public enum Role {
-        ADMIN,
-        DOCTOR,
-        PATIENT
-    }
+    private Role role;
 
-    public User(String id, String fullName, String email, String passwordHash, Role role, boolean emailVerified) {
-        this.id = id;
-        this.fullName = fullName;
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.role = role;
-        this.emailVerified = emailVerified;
-    }
+    @Indexed
+    @Builder.Default
+    private boolean active = true;
 
-    public String getId() {
-        return id;
-    }
+    private String phone;
 
-    public String getFullName() {
-        return fullName;
-    }
+    private String avatarUrl;
 
-    public String getEmail() {
-        return email;
-    }
+    private Address address;
 
-    public String getPasswordHash() {
-        return passwordHash;
-    }
+    @Field(targetType = FieldType.STRING)
+    private LocalDate dateOfBirth;
 
-    public Role getRole() {
-        return role;
-    }
+    private Gender gender;
 
-    public boolean isEmailVerified() {
-        return emailVerified;
-    }
+    private String insuranceNumber;
+
+    private EmergencyContact emergencyContact;
+
+    @Indexed
+    private String specialty;
+
+    @Indexed(unique = true, sparse = true)
+    private String licenseNumber;
+
+    private Integer yearsOfExperience;
+
+    private String clinicName;
+
+    private Address clinicAddress;
+
+    private String provider;
+
+    private String providerId;
+
+    @CreatedDate
+    private Instant createdAt;
+
+    @LastModifiedDate
+    private Instant updatedAt;
 }

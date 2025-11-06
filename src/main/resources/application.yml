@@ -7,6 +7,26 @@ spring:
   jackson:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: [openid, email, profile]
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          facebook:
+            client-id: ${FACEBOOK_CLIENT_ID}
+            client-secret: ${FACEBOOK_CLIENT_SECRET}
+            scope: [public_profile, email]
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          facebook:
+            authorization-uri: https://www.facebook.com/v20.0/dialog/oauth
+            token-uri: https://graph.facebook.com/v20.0/oauth/access_token
+            user-info-uri: https://graph.facebook.com/me?fields=id,name,email,picture
+            user-name-attribute: id
 
 server:
   port: 8080
@@ -18,9 +38,11 @@ app:
       refresh-secret: ${JWT_REFRESH_SECRET:change-me-refresh}
       access-expiration-min: 60
       refresh-expiration-days: 7
+  oauth:
+    redirect-mode: ${APP_OAUTH_REDIRECT_MODE:QUERY}
 
 cors:
-  allowed-origins: http://localhost:3000
+  allowed-origins: http://localhost:3000,https://mediplan-api-1b2c88de81dd.herokuapp.com
   allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
-  allowed-headers: "*"
+  allowed-headers: Authorization,Content-Type
   allow-credentials: true

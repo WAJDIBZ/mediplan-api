@@ -1,5 +1,6 @@
 package com.example.mediplan.security.jwt;
 
+import com.example.mediplan.user.User;
 import com.example.mediplan.user.UserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -44,7 +45,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 Claims claims = jwtService.parseAccessToken(token).getBody();
                 String userId = claims.getSubject();
                 String role = claims.get("role", String.class);
-                userRepository.findById(userId).ifPresent(u -> {
+                userRepository.findById(userId).filter(User::isActive).ifPresent(u -> {
                     var auth = new UsernamePasswordAuthenticationToken(
                             u.getId(),
                             null,
