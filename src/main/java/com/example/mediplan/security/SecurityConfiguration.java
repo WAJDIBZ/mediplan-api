@@ -1,8 +1,6 @@
 package com.example.mediplan.security;
 
 import com.example.mediplan.security.jwt.JwtAuthFilter;
-import com.example.mediplan.security.oauth.CustomOAuth2UserService;
-import com.example.mediplan.security.oauth.OAuth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,14 +11,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
+
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
     private final JwtAuthFilter jwtAuthFilter;
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler; // <— add a failure handler
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -30,11 +26,10 @@ public class SecurityConfiguration {
                     CorsConfiguration c = new CorsConfiguration();
                     c.setAllowedOrigins(List.of(
                             "http://localhost:3000",
-                            // PUT YOUR REAL FRONTEND ORIGIN HERE (e.g. Vercel/Netlify domain)
-                            "https://your-frontend.example.com"
+                            "https://mediplan-api-1b2c88de81dd.herokuapp.com"
                     ));
-                    c.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-                    c.setAllowedHeaders(List.of("Authorization","Content-Type"));
+                    c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                    c.setAllowedHeaders(List.of("Authorization", "Content-Type"));
                     c.setAllowCredentials(true);
                     return c;
                 }))
@@ -42,20 +37,11 @@ public class SecurityConfiguration {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/actuator/**",
-                                "/error",
-                                "/oauth2/**",
-                                "/login/oauth2/**"
+                                "/error"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                // IMPORTANT: let Spring create a session when needed (for OAuth2)
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-
-                .oauth2Login(oauth -> oauth
-                        .userInfoEndpoint(u -> u.userService(customOAuth2UserService))
-                        .successHandler(oAuth2LoginSuccessHandler)
-                        .failureHandler(oAuth2LoginFailureHandler)   // <— helps you see real cause if it fails
-                )
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

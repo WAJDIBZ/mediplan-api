@@ -15,12 +15,12 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: [openid, email, profile]
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "{baseUrl}/api/auth/google/callback"
           facebook:
             client-id: ${FACEBOOK_CLIENT_ID}
             client-secret: ${FACEBOOK_CLIENT_SECRET}
             scope: [public_profile, email]
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "{baseUrl}/api/auth/facebook/callback"
         provider:
           facebook:
             authorization-uri: https://www.facebook.com/v20.0/dialog/oauth
@@ -31,6 +31,11 @@ spring:
 server:
   port: 8080
   forward-headers-strategy: native
+  servlet:
+    session:
+      cookie:
+        secure: true
+        same-site: lax
 
 app:
   security:
