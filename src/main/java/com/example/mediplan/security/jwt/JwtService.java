@@ -12,6 +12,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -37,11 +38,16 @@ public class JwtService {
     public String generateAccessToken(String userId, String email, String role) {
         Instant now = Instant.now();
         Instant exp = now.plusSeconds(accessExpMin * 60);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
+        if (email != null) {
+            claims.put("email", email);
+        }
         return Jwts.builder()
                 .setSubject(userId)
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(exp))
-                .addClaims(Map.of("email", email, "role", role))
+                .addClaims(claims)
                 .signWith(accessKey, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -63,5 +69,13 @@ public class JwtService {
 
     public Jws<Claims> parseRefreshToken(String token) {
         return Jwts.parserBuilder().setSigningKey(refreshKey).build().parseClaimsJws(token);
+    }
+
+    public long getAccessExpMin() {
+        return accessExpMin;
+    }
+
+    public long getRefreshExpDays() {
+        return refreshExpDays;
     }
 }

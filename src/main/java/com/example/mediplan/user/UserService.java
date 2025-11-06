@@ -41,7 +41,18 @@ public class UserService {
     }
 
     public boolean checkPassword(String raw, String hash) {
-        return passwordEncoder.matches(raw, hash);
+        return hash != null && passwordEncoder.matches(raw, hash);
+    }
+
+    public String hashPassword(String rawPassword) {
+        return passwordEncoder.encode(rawPassword);
+    }
+
+    public Optional<User> findByProviderAndProviderId(String provider, String providerId) {
+        if (provider == null || providerId == null) {
+            return Optional.empty();
+        }
+        return userRepository.findByProviderAndProviderId(provider, providerId);
     }
 
     public String hashPassword(String rawPassword) {
