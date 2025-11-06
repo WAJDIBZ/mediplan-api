@@ -9,10 +9,14 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final MedecinRepository medecinRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository,
+                       MedecinRepository medecinRepository,
+                       BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.medecinRepository = medecinRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -21,7 +25,7 @@ public class UserService {
     }
 
     public boolean licenseExists(String licenseNumber) {
-        return licenseNumber != null && userRepository.existsByLicenseNumber(licenseNumber);
+        return licenseNumber != null && medecinRepository.existsByLicenseNumber(licenseNumber);
     }
 
     public <T extends User> T save(T user) {
