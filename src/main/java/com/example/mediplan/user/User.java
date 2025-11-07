@@ -1,63 +1,52 @@
+// User.java
 package com.example.mediplan.user;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.data.mongodb.core.mapping.FieldType;
 
-import java.time.Instant;
+@Getter @Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+public abstract class User {
 
-@Document("users")
-@Data @NoArgsConstructor @AllArgsConstructor @SuperBuilder
-public class User {
-
-    @Id
     private String id;
-
     private String fullName;
-
-    @Indexed(unique = true)
     private String email;
-
     private String passwordHash;
-    private boolean emailVerified;
+
+    // 🟢 Use enum for gender (not String)
+    private Gender gender;           // <— CHANGE: from String -> Gender
+
+    // 🟢 Use wrapper type so it can be null for non-doctors
+    private Integer yearsOfExperience; // <— keep as Integer everywhere
 
     private String phone;
     private String avatarUrl;
-    private String provider;     // "GOOGLE" | "FACEBOOK" | "LOCAL"
-    private String providerId;   // sub/id from provider
 
-    // <— AJOUTÉ : le mapper attend .address(...)
     private Address address;
-
-    @CreatedDate
-    private Instant createdAt;
-
-    @LastModifiedDate
-    private Instant updatedAt;
-
-    private Role role; // enum top-level: com.example.mediplan.user.Role
-
-    private boolean active = true;
-
-
-    private java.time.LocalDate dateOfBirth;
-    private String gender;
-
     private String insuranceNumber;
     private EmergencyContact emergencyContact;
 
     private String specialty;
     private String licenseNumber;
-    private Integer yearsOfExperience;
     private String clinicName;
     private Address clinicAddress;
 
+    private boolean emailVerified;
+
+    // Lombok note: default with builders must use @Builder.Default
+    @Builder.Default
+    private boolean active = true;
+    // <— fixes the @SuperBuilder warning
+
+    private Role role;
+
+    private String provider;   // "LOCAL", "GOOGLE", "FACEBOOK"
+    private String providerId;
+
+    private java.time.Instant createdAt;
+    private java.time.Instant updatedAt;
 
 
 }
