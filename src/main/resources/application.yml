@@ -36,6 +36,11 @@ server:
       cookie:
         secure: true
         same-site: lax
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.http.converter.json: TRACE
+
 
 app:
   security:
