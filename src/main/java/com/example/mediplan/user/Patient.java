@@ -6,7 +6,7 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
-
+@Document(collection = "user")
 @TypeAlias("patient")
 @Data @NoArgsConstructor @AllArgsConstructor @EqualsAndHashCode(callSuper = true) @SuperBuilder
 public class Patient extends User {

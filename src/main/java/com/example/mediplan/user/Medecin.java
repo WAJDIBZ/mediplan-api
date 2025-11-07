@@ -16,6 +16,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
+@Document(collection = "user")
 public class Medecin extends User {
     // no duplicate fields that already exist in User
     // DO NOT write any manual constructors

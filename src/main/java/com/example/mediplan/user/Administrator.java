@@ -12,10 +12,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @TypeAlias("admin")
 @Getter @Setter
+@Document(collection = "user")
 
-@AllArgsConstructor
+
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
+@AllArgsConstructor
+
 public class Administrator extends User {
     // no extra fields here unless truly admin-only
     // DO NOT write any manual constructors
