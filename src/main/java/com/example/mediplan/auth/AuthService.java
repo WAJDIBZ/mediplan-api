@@ -78,8 +78,9 @@ public class AuthService {
     private AuthResponse generateTokens(User user) {
         String access = jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
         String refresh = jwtService.generateRefreshToken(user.getId());
-        return new AuthResponse(access, refresh);
+        return new AuthResponse(access, refresh, user.getRole().name()); // ✅ send role directly
     }
+
 
     private void ensureEmailAvailable(String email) {
         if (userService.emailExists(email)) {
