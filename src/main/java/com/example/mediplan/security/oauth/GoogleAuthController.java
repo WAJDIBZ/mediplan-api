@@ -1,6 +1,7 @@
 package com.example.mediplan.security.oauth;
 
 import com.example.mediplan.security.jwt.JwtService;
+import com.example.mediplan.user.Patient;
 import com.example.mediplan.user.User;
 import com.example.mediplan.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +48,7 @@ public class GoogleAuthController {
             // 3️⃣ Check if user exists or create one
             User user = userRepository.findByEmail(email)
                     .orElseGet(() -> {
-                        User u = new User();
+                        User u = new Patient();
                         u.setEmail(email);
                         u.setFullName(name);
                         u.setProvider("google");
