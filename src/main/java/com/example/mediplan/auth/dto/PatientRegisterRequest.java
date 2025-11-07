@@ -1,6 +1,7 @@
 package com.example.mediplan.auth.dto;
 
 import com.example.mediplan.user.Gender;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -41,6 +42,7 @@ public class PatientRegisterRequest {
     private AddressDTO address;
 
     @NotNull(message = "La date de naissance est obligatoire")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     @Schema(example = "1990-05-14", type = "string", format = "date")
     private LocalDate dateOfBirth;
 
