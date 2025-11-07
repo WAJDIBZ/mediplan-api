@@ -1,7 +1,7 @@
 package com.example.mediplan.user;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 
 public enum Gender {
     MALE("HOMME"),
@@ -17,13 +17,15 @@ public enum Gender {
 
     @JsonCreator
     public static Gender fromString(String value) {
+        if (value == null) return null;
         for (Gender g : Gender.values()) {
-            if (g.name().equalsIgnoreCase(value) ||
-                    g.displayName.equalsIgnoreCase(value)) {
+            if (g.name().equalsIgnoreCase(value)
+                    || g.displayName.equalsIgnoreCase(value)) {
                 return g;
             }
         }
-        throw new IllegalArgumentException("Unknown gender: " + value);
+        // returning default instead of throwing exception avoids 500 errors
+        return UNDISCLOSED;
     }
 
     @JsonValue
