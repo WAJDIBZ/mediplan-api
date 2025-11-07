@@ -38,16 +38,11 @@ public class SecurityConfiguration {
                     return c;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/actuator/**",
-                                "/error"
-                        ).permitAll()
+                        .requestMatchers("/api/auth/**", "/actuator/**", "/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-
                         .anyRequest().authenticated()
                 )
+
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

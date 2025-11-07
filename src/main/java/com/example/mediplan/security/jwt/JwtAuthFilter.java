@@ -62,15 +62,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String role = claims.get("role", String.class);
 
             userRepository.findById(userId).ifPresent(u -> {
-                var auth = new UsernamePasswordAuthenticationToken(
-                        u, // ✅ full user object, not just ID
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + role)) // ✅ "ADMIN"
-                );
-                auth.setAuthenticated(true);
+                var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                var auth = new UsernamePasswordAuthenticationToken(u, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 request.setAttribute("userId", u.getId());
             });
+            System.out.println(">>> Authenticated as " + role);
+
 
             System.out.println(">>> Authenticated as " + role + " | userId=" + claims.getSubject());
             System.out.println("Authorities in context: " +
