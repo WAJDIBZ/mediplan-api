@@ -37,7 +37,7 @@ public class UserMapper {
                 .phone(trimNullable(dto.getPhone()))
                 .avatarUrl(trimNullable(dto.getAvatarUrl()))
                 .address(map(dto.getAddress()))          // <- adresse perso (si tu l’envoies)
-                .role(Role.DOCTOR)
+                .role(Role.MEDECIN)
                 .specialty(trim(dto.getSpecialty()))
                 .licenseNumber(trim(dto.getLicenseNumber()))
                 .yearsOfExperience(dto.getYearsOfExperience())

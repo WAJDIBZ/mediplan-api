@@ -46,4 +46,18 @@ public class User {
     private boolean active = true;
 
 
+    private java.time.LocalDate dateOfBirth;
+    private String gender;
+
+    private String insuranceNumber;
+    private EmergencyContact emergencyContact;
+
+    private String specialty;
+    private String licenseNumber;
+    private Integer yearsOfExperience;
+    private String clinicName;
+    private Address clinicAddress;
+
+
+
 }
