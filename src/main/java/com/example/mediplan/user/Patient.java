@@ -12,7 +12,6 @@ import java.time.LocalDate;
 public class Patient extends User {
 
     private LocalDate dateOfBirth;
-    private Gender gender;
     private String insuranceNumber;
     private EmergencyContact emergencyContact;
 
