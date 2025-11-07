@@ -36,7 +36,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
-@PreAuthorize("hasAuthority('ADMIN')")
+
 public class AdminUserController {
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("createdAt", "fullName", "email", "role", "active", "provider");
