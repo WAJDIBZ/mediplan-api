@@ -8,6 +8,8 @@ spring:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
   security:
+    jwt:
+      access-expiration-min: 1440  # 24 hours instead of 60 minutes
     oauth2:
       client:
         registration:
