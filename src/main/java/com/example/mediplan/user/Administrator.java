@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "user")
 
 
-@NoArgsConstructor
+
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @AllArgsConstructor
