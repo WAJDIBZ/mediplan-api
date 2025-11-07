@@ -49,7 +49,7 @@ app:
     jwt:
       access-secret: ${JWT_ACCESS_SECRET:change-me-access}
       refresh-secret: ${JWT_REFRESH_SECRET:change-me-refresh}
-      access-expiration-min: 60
+      access-expiration-min: 500
       refresh-expiration-days: 7
   oauth:
     redirect-mode: ${APP_OAUTH_REDIRECT_MODE:QUERY}
