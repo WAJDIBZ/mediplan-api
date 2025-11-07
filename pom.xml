@@ -130,6 +130,7 @@
 
 
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -141,6 +142,7 @@
                             <artifactId>lombok</artifactId>
                         </path>
                     </annotationProcessorPaths>
+
                 </configuration>
             </plugin>
             <plugin>
@@ -155,6 +157,20 @@
                     </excludes>
                 </configuration>
             </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.5.4</version>
+                    <configuration>
+                        <excludes>
+                            <exclude>**/*Test.java</exclude>
+                            <exclude>**/*Tests.java</exclude>
+                            <exclude>**/*IT.java</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+
         </plugins>
     </build>
 
