@@ -55,24 +55,31 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 4) Validate token (if present) and continue
         try {
             String token = authHeader.substring(7);
             Claims claims = jwtService.parseAccessToken(token).getBody();
             String userId = claims.getSubject();
             String role = claims.get("role", String.class);
+
             userRepository.findById(userId).ifPresent(u -> {
                 var auth = new UsernamePasswordAuthenticationToken(
-                        u.getId(), null, List.of(new SimpleGrantedAuthority(role)
-                ));
+                        u, // ✅ full user object, not just ID
+                        null,
+                        List.of(new SimpleGrantedAuthority(role)) // ✅ "ADMIN"
+                );
+                auth.setAuthenticated(true);
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 request.setAttribute("userId", u.getId());
             });
-            System.out.println(">>> Authenticated as " + role);
-        } catch (Exception ignored) { /* do not block here */ }
 
+            System.out.println(">>> Authenticated as " + role + " | userId=" + claims.getSubject());
+            System.out.println("Authorities in context: " +
+                    SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         chain.doFilter(request, response);
     }
-
 }
