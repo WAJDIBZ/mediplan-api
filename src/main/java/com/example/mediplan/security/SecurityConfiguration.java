@@ -43,7 +43,8 @@ public class SecurityConfiguration {
                                 "/actuator/**",
                                 "/error"
                         ).permitAll()
-                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
 
                         .anyRequest().authenticated()
                 )
