@@ -39,7 +39,7 @@ public class MedecinSearchService {
             ));
         }
         if (StringUtils.hasText(request.getSpecialite())) {
-            criteres.add(Criteria.where("specialty").regex("^" + Pattern.quote(request.getSpecialite()) + "$", Pattern.CASE_INSENSITIVE));
+            criteres.add(Criteria.where("specialty").regex("^" + Pattern.quote(request.getSpecialite()) + "$", "i"));
         }
         if (StringUtils.hasText(request.getVille())) {
             criteres.add(Criteria.where("clinicAddress.city").regex(
