@@ -11,8 +11,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 
 @TypeAlias("medecin")
-@Getter @Setter
-
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder

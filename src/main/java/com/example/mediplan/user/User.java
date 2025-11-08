@@ -1,25 +1,31 @@
-// User.java
 package com.example.mediplan.user;
 
-import lombok.*;
+import java.time.Instant;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 
-@Getter @Setter
+@Getter
+@Setter
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public abstract class User {
 
+    @Id
     private String id;
     private String fullName;
     private String email;
     private String passwordHash;
 
-    // 🟢 Use enum for gender (not String)
-    private Gender gender;           // <— CHANGE: from String -> Gender
-
-    // 🟢 Use wrapper type so it can be null for non-doctors
-    private Integer yearsOfExperience; // <— keep as Integer everywhere
+    private Gender gender;
+    private Integer yearsOfExperience;
 
     private String phone;
     private String avatarUrl;
@@ -33,20 +39,20 @@ public abstract class User {
     private String clinicName;
     private Address clinicAddress;
 
-    private boolean emailVerified;
+    @Builder.Default
+    private boolean emailVerified = false;
 
-    // Lombok note: default with builders must use @Builder.Default
     @Builder.Default
     private boolean active = true;
-    // <— fixes the @SuperBuilder warning
 
     private Role role;
 
     private String provider;   // "LOCAL", "GOOGLE", "FACEBOOK"
     private String providerId;
 
-    private java.time.Instant createdAt;
-    private java.time.Instant updatedAt;
+    @CreatedDate
+    private Instant createdAt;
 
-
+    @LastModifiedDate
+    private Instant updatedAt;
 }

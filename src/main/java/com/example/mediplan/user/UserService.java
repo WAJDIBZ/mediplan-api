@@ -9,14 +9,11 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final MedecinRepository medecinRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository,
-                       MedecinRepository medecinRepository,
                        BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.medecinRepository = medecinRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -25,7 +22,7 @@ public class UserService {
     }
 
     public boolean licenseExists(String licenseNumber) {
-        return licenseNumber != null && medecinRepository.existsByLicenseNumber(licenseNumber);
+        return licenseNumber != null && userRepository.existsByLicenseNumber(licenseNumber);
     }
 
     public <T extends User> T save(T user) {
@@ -55,5 +52,10 @@ public class UserService {
         return userRepository.findByProviderAndProviderId(provider, providerId);
     }
 
-
+    public Optional<User> findByLicenseNumber(String licenseNumber) {
+        if (licenseNumber == null) {
+            return Optional.empty();
+        }
+        return userRepository.findByLicenseNumber(licenseNumber);
+    }
 }

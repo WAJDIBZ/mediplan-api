@@ -59,6 +59,10 @@ public class AuthService {
         String normalizedEmail = normalizeEmail(request.getEmail());
         String password = trim(request.getPassword());
 
+        if (!StringUtils.hasText(normalizedEmail) || !StringUtils.hasText(password)) {
+            throw new InvalidCredentialsException("Identifiants invalides.");
+        }
+
         User user = userService.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new InvalidCredentialsException("Identifiants invalides."));
         if (!userService.checkPassword(password, user.getPasswordHash())) {
@@ -78,18 +82,22 @@ public class AuthService {
     private AuthResponse generateTokens(User user) {
         String access = jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
         String refresh = jwtService.generateRefreshToken(user.getId());
-        return new AuthResponse(access, refresh, user.getRole().name()); // ✅ send role directly
+        return AuthResponse.builder()
+                .accessToken(access)
+                .refreshToken(refresh)
+                .role(user.getRole().name())
+                .build();
     }
 
 
     private void ensureEmailAvailable(String email) {
-        if (userService.emailExists(email)) {
+        if (StringUtils.hasText(email) && userService.emailExists(email)) {
             throw new ResourceConflictException("Cet email est déjà utilisé.");
         }
     }
 
     private void ensureLicenseAvailable(String licenseNumber) {
-        if (licenseNumber != null && userService.licenseExists(licenseNumber)) {
+        if (StringUtils.hasText(licenseNumber) && userService.licenseExists(licenseNumber)) {
             throw new ResourceConflictException("Ce numéro de licence est déjà enregistré.");
         }
     }
@@ -113,6 +121,7 @@ public class AuthService {
         request.setEmail(trim(request.getEmail()));
         request.setPassword(trim(request.getPassword()));
         request.setPhone(trimToNull(request.getPhone()));
+        request.setAvatarUrl(trimToNull(request.getAvatarUrl()));
         request.setInsuranceNumber(trimToNull(request.getInsuranceNumber()));
         if (request.getAddress() != null) {
             request.getAddress().setLine1(trim(request.getAddress().getLine1()));
@@ -137,6 +146,13 @@ public class AuthService {
         request.setLicenseNumber(trim(request.getLicenseNumber()));
         request.setClinicName(trimToNull(request.getClinicName()));
         request.setAvatarUrl(trimToNull(request.getAvatarUrl()));
+        if (request.getAddress() != null) {
+            request.getAddress().setLine1(trim(request.getAddress().getLine1()));
+            request.getAddress().setLine2(trimToNull(request.getAddress().getLine2()));
+            request.getAddress().setCity(trim(request.getAddress().getCity()));
+            request.getAddress().setCountry(trim(request.getAddress().getCountry()));
+            request.getAddress().setZip(trim(request.getAddress().getZip()));
+        }
         if (request.getClinicAddress() != null) {
             request.getClinicAddress().setLine1(trim(request.getClinicAddress().getLine1()));
             request.getClinicAddress().setLine2(trimToNull(request.getClinicAddress().getLine2()));

@@ -12,20 +12,7 @@
     <artifactId>mediplan-api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>mediplan-api</name>
-    <description>mediplan-api</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
+    <description>API MediPlan</description>
     <properties>
         <java.version>17</java.version>
     </properties>
@@ -42,12 +29,10 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- Only this is needed for OAuth2 login (do NOT add spring-security-oauth2-client manually) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-client</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -92,7 +77,6 @@
             <version>2.6.0</version>
         </dependency>
 
-        <!-- ✅ Embedded Mongo for local testing only -->
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
@@ -100,7 +84,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- ✅ Testcontainers -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-testcontainers</artifactId>
@@ -157,19 +140,6 @@
                     </excludes>
                 </configuration>
             </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.5.4</version>
-                    <configuration>
-                        <excludes>
-                            <exclude>**/*Test.java</exclude>
-                            <exclude>**/*Tests.java</exclude>
-                            <exclude>**/*IT.java</exclude>
-                        </excludes>
-                    </configuration>
-                </plugin>
 
         </plugins>
     </build>
