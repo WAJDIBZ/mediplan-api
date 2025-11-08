@@ -66,7 +66,7 @@ class AdminUserServiceTest {
 
         when(userRepository.findById("user-1")).thenReturn(Optional.of(admin));
         when(mapper.toAddress(any())).thenReturn(null);
-        when(mapper.toDetails(any())).thenReturn(AdminUserDetailsDTO.builder().build());
+       
 
         Medecin existingMed = Medecin.builder()
                 .id("user-2")
