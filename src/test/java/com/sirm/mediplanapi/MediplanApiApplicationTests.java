@@ -1,13 +1,11 @@
 package com.sirm.mediplanapi;
 
+import com.example.mediplan.MediplanApiApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest
+@SpringBootTest(classes = MediplanApiApplication.class)
 @Testcontainers
 class MediplanApiApplicationTests {
     @Test
