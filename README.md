@@ -1,114 +1,32 @@
 # MediPlan API
 
-API Spring Boot pour la gestion de l'authentification des patients et des médecins avec MongoDB.
+API Spring Boot pour la gestion des utilisateurs (patients, médecins, administrateurs) avec authentification JWT et MongoDB.
 
-## Endpoints principaux
-
-| Méthode | Chemin                       | Description                     |
-|---------|------------------------------|---------------------------------|
-| POST    | `/api/auth/register/patient` | Inscription d'un patient         |
-| POST    | `/api/auth/register/doctor`  | Inscription d'un médecin         |
-| POST    | `/api/auth/login`            | Connexion et génération de JWT   |
-| POST    | `/api/auth/refresh`          | Renouvellement du token refresh  |
-
-## Exemples cURL
-
-### Inscription d'un patient
+## Démarrage rapide
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/register/patient \
-  -H "Content-Type: application/json" \
-  -d '{
-        "fullName": "Claire Martin",
-        "email": "claire.martin@example.com",
-        "password": "motdepasseFort123",
-        "phone": "+33612345678",
-        "dateOfBirth": "1990-05-14",
-        "gender": "FEMALE"
-      }'
+./mvnw spring-boot:run
 ```
 
-Réponse attendue :
+Variables d’environnement clés :
 
-```json
-{
-  "accessToken": "<jwt_access>",
-  "refreshToken": "<jwt_refresh>"
-}
-```
+| Variable | Description |
+|----------|-------------|
+| `MONGO_URI` | Chaîne de connexion MongoDB. |
+| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | Secrets HMAC (>= 32 chars). |
+| `CORS_ALLOWED_ORIGINS` | Origines autorisées (séparées par des virgules). |
+| `FRONT_REDIRECT_URL` | URL de redirection OAuth2 (mode query/cookies). |
 
-### Inscription d'un médecin
+## Ressources
+
+- [Documentation API backend](docs/API_BACKEND.md)
+- [Plan produit sur 5 sprints](docs/PLAN_SPRINTS.md)
+- [Prompt exécutoire frontend](docs/PROMPT_FRONTEND.md)
+
+## Tests
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/register/doctor \
-  -H "Content-Type: application/json" \
-  -d '{
-        "fullName": "Dr Antoine Leroy",
-        "email": "antoine.leroy@example.com",
-        "password": "MotDePasseSolide1",
-        "specialty": "Cardiologie",
-        "licenseNumber": "LIC-987654",
-        "yearsOfExperience": 12
-      }'
+./mvnw test
 ```
 
-### Connexion
-
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-        "email": "claire.martin@example.com",
-        "password": "motdepasseFort123"
-      }'
-```
-
-### Erreur sur email dupliqué (409)
-
-```bash
-curl -X POST http://localhost:8080/api/auth/register/doctor \
-  -H "Content-Type: application/json" \
-  -d '{
-        "fullName": "Dr Antoine Leroy",
-        "email": "claire.martin@example.com",
-        "password": "MotDePasseSolide1",
-        "specialty": "Cardiologie",
-        "licenseNumber": "LIC-987654",
-        "yearsOfExperience": 12
-      }'
-```
-
-Réponse :
-
-```json
-{
-  "message": "Cet email est déjà utilisé."
-}
-```
-
-### Erreur de validation (400)
-
-```bash
-curl -X POST http://localhost:8080/api/auth/register/patient \
-  -H "Content-Type: application/json" \
-  -d '{
-        "fullName": "Cl",
-        "email": "mauvais-format",
-        "password": "123"
-      }'
-```
-
-Réponse :
-
-```json
-{
-  "message": "Requête invalide",
-  "erreurs": {
-    "fullName": "Le nom complet doit contenir au moins 3 caractères",
-    "email": "L'email doit être valide",
-    "password": "Le mot de passe doit contenir au moins 8 caractères",
-    "dateOfBirth": "La date de naissance est obligatoire",
-    "gender": "Le genre est obligatoire"
-  }
-}
-```
+Les tests utilisent MongoDB embarqué (Flapdoodle) et peuvent être exécutés sans configuration supplémentaire.

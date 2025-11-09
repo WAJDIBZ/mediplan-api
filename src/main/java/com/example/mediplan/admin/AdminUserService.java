@@ -72,8 +72,7 @@ public class AdminUserService {
             if (!StringUtils.hasText(specialty)) {
                 throw new BusinessRuleException("La spécialité est obligatoire pour un médecin.");
             }
-            // On création, l'unicité est simple
-            ensureLicenseUniqueOnCreate(licenseNumber);
+            ensureLicenseAvailable(licenseNumber, null);
         }
 
         User user = buildUserForCreation(request, email, licenseNumber, specialty);
@@ -144,9 +143,8 @@ public class AdminUserService {
                 if (!StringUtils.hasText(newLicense)) {
                     throw new BusinessRuleException("Le numéro de licence est requis pour un médecin.");
                 }
-                // Vérifier l'unicité seulement si changé
                 if (!Objects.equals(newLicense, m.getLicenseNumber())) {
-                    ensureLicenseUniqueOnUpdate(newLicense, m.getLicenseNumber());
+                    ensureLicenseAvailable(newLicense, user.getId());
                     m.setLicenseNumber(newLicense);
                 }
             }
@@ -199,6 +197,10 @@ public class AdminUserService {
     }
 
     public AdminUserDetailsDTO changeRole(String id, AdminChangeRoleRequest request) {
+        sanitizeChangeRoleRequest(request);
+        if (request.getRole() == null) {
+            throw new BusinessRuleException("Le rôle cible est obligatoire.");
+        }
         User current = getById(id);
         Role targetRole = request.getRole();
         if (current.getRole() == targetRole) {
@@ -222,9 +224,7 @@ public class AdminUserService {
                 if (!org.springframework.util.StringUtils.hasText(license)) {
                     throw new BusinessRuleException("Le numéro de licence est obligatoire pour promouvoir en médecin.");
                 }
-
-                // If you enforce uniqueness here, uncomment:
-                // ensureLicenseAvailable(license, current.getId());
+                ensureLicenseAvailable(license, current.getId());
 
                 yield convertToMedecin(current, specialty, license, yoe, clinic, clinicAddr);
             }
@@ -479,20 +479,15 @@ public class AdminUserService {
         });
     }
 
-    /** Unicité à la création : simple exists -> conflit */
-    private void ensureLicenseUniqueOnCreate(String licenseNumber) {
-        if (StringUtils.hasText(licenseNumber) && userService.licenseExists(licenseNumber)) {
-            throw new ResourceConflictException("Ce numéro de licence est déjà enregistré.");
+    private void ensureLicenseAvailable(String licenseNumber, String currentUserId) {
+        if (!StringUtils.hasText(licenseNumber)) {
+            return;
         }
-    }
-
-    /** Unicité à la mise à jour : si changement, vérifier exists -> conflit */
-    private void ensureLicenseUniqueOnUpdate(String newLicense, String currentLicense) {
-        if (!StringUtils.hasText(newLicense)) return;
-        if (Objects.equals(newLicense, currentLicense)) return;
-        if (userService.licenseExists(newLicense)) {
-            throw new ResourceConflictException("Ce numéro de licence est déjà enregistré.");
-        }
+        userService.findByLicenseNumber(licenseNumber).ifPresent(existing -> {
+            if (!Objects.equals(existing.getId(), currentUserId)) {
+                throw new ResourceConflictException("Ce numéro de licence est déjà enregistré.");
+            }
+        });
     }
 
     private User getById(String id) {
@@ -528,6 +523,16 @@ public class AdminUserService {
         sanitizeAddress(request.getAddress());
         sanitizeAddress(request.getClinicAddress());
         sanitizeEmergencyContact(request.getEmergencyContact());
+    }
+
+    private void sanitizeChangeRoleRequest(AdminChangeRoleRequest request) {
+        if (request == null) {
+            return;
+        }
+        request.setSpecialty(trimToNull(request.getSpecialty()));
+        request.setLicenseNumber(trimToNull(request.getLicenseNumber()));
+        request.setClinicName(trimToNull(request.getClinicName()));
+        sanitizeAddress(request.getClinicAddress());
     }
 
     private void sanitizeAddress(com.example.mediplan.admin.dto.AdminAddressInput address) {
