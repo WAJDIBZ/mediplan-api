@@ -10,6 +10,7 @@ import com.example.mediplan.admin.dto.AdminUserListItemDTO;
 import com.example.mediplan.common.exception.BusinessRuleException;
 import com.example.mediplan.user.Role;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,13 +36,16 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/admin/users")
-@RequiredArgsConstructor
 
 public class AdminUserController {
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("createdAt", "fullName", "email", "role", "active", "provider");
 
     private final AdminUserService adminUserService;
+    @Autowired
+    public AdminUserController(AdminUserService adminUserService) {
+        this.adminUserService = adminUserService;
+    }
 
     @GetMapping
     public Page<AdminUserListItemDTO> listUsers(@RequestParam(value = "q", required = false) String q,
