@@ -328,9 +328,11 @@ public class AdminUserService {
                         .active(true)
                         .phone(phone)
                         .avatarUrl(avatarUrl)
+                        .gender(request.getGender())
                         .address(mapper.toAddress(request.getAddress()))
                         .insuranceNumber(trimToNull(request.getInsuranceNumber()))
                         .emergencyContact(mapper.toEmergencyContact(request.getEmergencyContact()))
+                        .dateOfBirth(request.getDateOfBirth())
                         .build();
 
             case MEDECIN:
@@ -344,6 +346,7 @@ public class AdminUserService {
                         .active(true)
                         .phone(phone)
                         .avatarUrl(avatarUrl)
+                        .gender(request.getGender())                        // ✅ Depuis User
                         .specialty(specialty)
                         .licenseNumber(licenseNumber)
                         .yearsOfExperience(request.getYearsOfExperience())
@@ -362,6 +365,7 @@ public class AdminUserService {
                         .active(true)
                         .phone(phone)
                         .avatarUrl(avatarUrl)
+                        .gender(request.getGender())                        // ✅ Depuis User
                         .address(mapper.toAddress(request.getAddress()))
                         .build();
 
