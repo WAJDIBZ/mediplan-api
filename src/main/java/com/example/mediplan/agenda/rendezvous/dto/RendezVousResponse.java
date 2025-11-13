@@ -3,21 +3,27 @@ package com.example.mediplan.agenda.rendezvous.dto;
 import com.example.mediplan.agenda.rendezvous.RendezVousStatut;
 import java.time.Instant;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 @Builder
 public class RendezVousResponse {
+    private String id;
 
-    private final String id;
-    private final String medecinId;
-    private final String patientId;
-    private final Instant debut;
-    private final Instant fin;
-    private final RendezVousStatut statut;
-    private final String motif;
-    private final String notesPrivees;
-    private final String createurId;
-    private final Instant createdAt;
-    private final Instant updatedAt;
+    // Keep these for backward compatibility
+    private String medecinId;
+    private String patientId;
+
+    // ✅ Add these new fields
+    private ParticipantDTO medecin;
+    private ParticipantDTO patient;
+
+    private Instant debut;
+    private Instant fin;
+    private RendezVousStatut statut;
+    private String motif;
+    private String notesPrivees;
+    private String createurId;
+    private Instant createdAt;
+    private Instant updatedAt;
 }

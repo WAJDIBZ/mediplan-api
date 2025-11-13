@@ -3,12 +3,15 @@ package com.example.mediplan.agenda.rendezvous;
 import com.example.mediplan.agenda.disponibilite.Disponibilite;
 import com.example.mediplan.agenda.disponibilite.DisponibiliteService;
 import com.example.mediplan.agenda.rendezvous.dto.ChangementStatutRequest;
+import com.example.mediplan.agenda.rendezvous.dto.ParticipantDTO;
 import com.example.mediplan.agenda.rendezvous.dto.RendezVousRequest;
 import com.example.mediplan.agenda.rendezvous.dto.RendezVousResponse;
 import com.example.mediplan.common.exception.BusinessRuleException;
 import com.example.mediplan.common.exception.ResourceNotFoundException;
+import com.example.mediplan.user.Medecin;
 import com.example.mediplan.user.Role;
 import com.example.mediplan.user.User;
+import com.example.mediplan.user.UserRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -39,6 +42,7 @@ public class RendezVousService {
 
     private final RendezVousRepository repository;
     private final DisponibiliteService disponibiliteService;
+    private final UserRepository userRepository;
 
     public RendezVousResponse creer(@Valid RendezVousRequest request, User createur) {
         if (!request.getFin().isAfter(request.getDebut())) {
@@ -192,7 +196,7 @@ public class RendezVousService {
     }
 
     private RendezVousResponse toResponse(RendezVous rendezVous) {
-        return RendezVousResponse.builder()
+        RendezVousResponse response = RendezVousResponse.builder()
                 .id(rendezVous.getId())
                 .medecinId(rendezVous.getMedecinId())
                 .patientId(rendezVous.getPatientId())
@@ -205,5 +209,35 @@ public class RendezVousService {
                 .createdAt(rendezVous.getCreatedAt())
                 .updatedAt(rendezVous.getUpdatedAt())
                 .build();
+
+
+        userRepository.findById(rendezVous.getMedecinId()).ifPresent(medecin -> {
+            ParticipantDTO medecinDTO = new ParticipantDTO();
+            medecinDTO.setId(medecin.getId());
+            medecinDTO.setFullName(medecin.getFullName());
+            medecinDTO.setEmail(medecin.getEmail());
+            medecinDTO.setPhone(medecin.getPhone());
+            medecinDTO.setAvatarUrl(medecin.getAvatarUrl());
+
+            if (medecin instanceof Medecin m) {
+                medecinDTO.setSpecialty(m.getSpecialty());
+            }
+
+            response.setMedecin(medecinDTO);
+        });
+
+
+        userRepository.findById(rendezVous.getPatientId()).ifPresent(patient -> {
+            ParticipantDTO patientDTO = new ParticipantDTO();
+            patientDTO.setId(patient.getId());
+            patientDTO.setFullName(patient.getFullName());
+            patientDTO.setEmail(patient.getEmail());
+            patientDTO.setPhone(patient.getPhone());
+            patientDTO.setAvatarUrl(patient.getAvatarUrl());
+
+            response.setPatient(patientDTO);
+        });
+
+        return response;
     }
 }

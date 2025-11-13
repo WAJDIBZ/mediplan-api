@@ -1,9 +1,6 @@
 package com.example.mediplan.agenda.rendezvous;
 
 import java.time.Instant;
-
-import com.example.mediplan.user.Medecin;
-import com.example.mediplan.user.Patient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +10,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
@@ -28,11 +24,9 @@ public class RendezVous {
     @Id
     private String id;
 
-    @DBRef
-    private Medecin medecin;
+    private String medecinId;
 
-    @DBRef
-    private Patient patient;
+    private String patientId;
 
     private Instant debut;
 
