@@ -55,7 +55,7 @@ app:
     redirect-mode: ${APP_OAUTH_REDIRECT_MODE:QUERY}
 
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,https://mediplan-api-1b2c88de81dd.herokuapp.com}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:https://mediplan-web-c8880005a6eb.herokuapp.com,https://localhost:3000}
   allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,PATCH,DELETE,OPTIONS}
   allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type}
   allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
