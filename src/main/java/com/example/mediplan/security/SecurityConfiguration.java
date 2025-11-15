@@ -51,7 +51,7 @@ public class SecurityConfiguration {
 
         return http.build();
     }
-
+/*
     private CorsConfiguration buildCorsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
         List<String> origins = corsProperties.getAllowedOrigins();
@@ -79,4 +79,15 @@ public class SecurityConfiguration {
         configuration.setExposedHeaders(List.of("Content-Disposition"));
         return configuration;
     }
+
+ */
+private CorsConfiguration buildCorsConfiguration() {
+    CorsConfiguration config = new CorsConfiguration();
+    config.addAllowedOriginPattern("*");     // <-- allow ALL origins
+    config.addAllowedHeader("*");            // <-- allow ALL headers
+    config.addAllowedMethod("*");            // <-- allow ALL methods
+    config.setAllowCredentials(true);
+    return config;
+}
+
 }
