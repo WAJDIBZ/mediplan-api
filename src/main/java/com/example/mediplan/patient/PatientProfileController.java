@@ -1,5 +1,6 @@
 package com.example.mediplan.patient;
 
+import com.example.mediplan.common.exception.BusinessRuleException;
 import com.example.mediplan.patient.dto.PatientProfileResponse;
 import com.example.mediplan.patient.dto.PatientProfileUpdateRequest;
 import com.example.mediplan.user.Patient;
@@ -18,7 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/patients/me")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('PATIENT')")
+@PreAuthorize("hasAnyRole('PATIENT', 'MEDECIN')")
+
 public class PatientProfileController {
 
     private final PatientProfileService service;
@@ -30,11 +32,20 @@ public class PatientProfileController {
 
     @PutMapping
     public PatientProfileResponse update(@Valid @RequestBody PatientProfileUpdateRequest request,
-            Authentication authentication) {
+                                         Authentication authentication) {
+
         User user = (User) authentication.getPrincipal();
-        if (user.getRole() != Role.PATIENT) {
-            throw new com.example.mediplan.common.exception.BusinessRuleException("Seul un patient peut modifier son profil");
+
+        if (user.getRole() == Role.PATIENT) {
+            return service.updateProfile((Patient) user, request);
         }
-        return service.updateProfile((Patient) user, request);
+
+
+        if (user.getRole() == Role.MEDECIN) {
+            throw new BusinessRuleException("Le médecin peut consulter mais ne peut pas modifier le profil du patient.");
+        }
+
+        throw new BusinessRuleException("Accès non autorisé.");
     }
+
 }
