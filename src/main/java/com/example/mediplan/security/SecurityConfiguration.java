@@ -17,7 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-
+import org.springframework.http.HttpMethod;
 @Configuration
 @EnableMethodSecurity
 @EnableConfigurationProperties(CorsProperties.class)
@@ -38,7 +38,14 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/actuator/**", "/data-deletion.html",
                                 "/privacy-policy", "/error").permitAll()
+
+                        // ✅ Lecture des utilisateurs (patients) autorisée pour ADMIN + MEDECIN
+                        .requestMatchers(HttpMethod.GET, "/api/admin/users", "/api/admin/users/**")
+                        .hasAnyRole("ADMIN", "MEDECIN")
+
+                        // ❌ Tout le reste de /api/admin/** reste réservé à ADMIN
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
