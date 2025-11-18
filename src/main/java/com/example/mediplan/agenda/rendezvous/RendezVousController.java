@@ -48,6 +48,8 @@ public class RendezVousController {
         return service.modifier(id, request, utilisateur(authentication));
     }
 
+
+
     @PatchMapping("/{id}/statut")
     @PreAuthorize("hasAnyRole('ADMIN','MEDECIN','PATIENT')")
     public RendezVousResponse changerStatut(@PathVariable String id,
@@ -96,6 +98,9 @@ public class RendezVousController {
     public void annuler(@PathVariable String id, Authentication authentication) {
         service.supprimer(id, utilisateur(authentication));
     }
+
+
+
 
     private User utilisateur(Authentication authentication) {
         return (User) authentication.getPrincipal();

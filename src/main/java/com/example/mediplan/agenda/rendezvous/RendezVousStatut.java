@@ -4,5 +4,6 @@ public enum RendezVousStatut {
     PLANIFIE,
     CONFIRME,
     ANNULE,
-    HONORE
+    HONORE,
+    ABSENT
 }
