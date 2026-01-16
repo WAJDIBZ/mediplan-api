@@ -21,7 +21,7 @@ Variables d’environnement clés :
 
 - [Documentation API backend](docs/API_BACKEND.md)
 - [Plan produit sur 5 sprints](docs/PLAN_SPRINTS.md)
-- [Prompt exécutoire frontend](docs/PROMPT_FRONTEND.md)
+
 
 ## Tests
 
